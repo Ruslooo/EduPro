@@ -1,0 +1,61 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block content %}
+    <form method="get"
+          style="display: flex; flex-flow: column wrap; max-width: 100px; gap: 15px; padding: 10px 10px 10px 0;">
+        <label for="id_department">
+            {{ filter.form.category }}
+        </label>
+        <label for="id_institute">
+            {{ filter.form.institute }}
+        </label>
+        <input type="submit"/>
+    </form>
+    <ul class="list-articles">
+        {% for post in filter.qs %}
+            <li>
+                <div class="article-panel">
+                    {% if post.category %}<p class="first">Кафедра - {{ post.category }}</p>{% endif %}
+                    {% if post.institute %}<p class="first">Институт - {{ post.institute }}</p>{% endif %}
+                    <p class="last">Дата: {{ post.time_update|date:"d-m-Y H:i:s" }}</p>
+                </div>
+
+                {% if post.photo %}
+                    <p><img class="img-article-left thumb" src="{{ post.photo.url }}"></p>
+                {% endif %}
+
+                <h2>{{ post.title }}</h2>
+                {% autoescape on %}
+                    {{ post.content|linebreaks|truncatewords:50 }}
+                {% endautoescape %}
+                <div class="clear"></div>
+                <div>
+
+                </div>
+                <div class="link-read-post"
+                     style="display:flex; flex-flow: row nowrap; justify-content: flex-end; gap: 10px">
+                    <div class="likes">{{ post.likes_count }} лайков</div>
+                    <div class="dislikes">{{ post.dislikes_count }} дизлайков</div>
+                    <button type="button" class="leave-thumb js-trigger-thumbs"
+                            data-url="{% url "posts:leave_like" post.slug %}">
+                        {#                        {% include "mysite/includes/thumbs_up.html" %}#}
+                        Лайк
+                    </button>
+                    <button type="button" class="leave-thumb js-trigger-thumbs"
+                            data-url="{% url "posts:leave_dislike" post.slug %}">
+                        Дизлайк
+                        {#                        {% include "mysite/includes/thumbs_down.html" %}#}
+                    </button>
+                    <div><a href="{{ post.get_absolute_url }}">Читать пост</a></div>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
+
+
+{% block SCRIPTS %}
+    {{ block.super }}
+    <script src="{% static "mysite/js/script.js" %}"></script>
+{% endblock %}
