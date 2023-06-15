@@ -72,9 +72,6 @@ class ShowPost(DetailView):
     slug_url_kwarg = 'post_slug'
     context_object_name = 'post'
 
-    def get(self, request, *args, **kwargs):
-        return self.render_to_response(self.get_context_data())
-
     def post(self, request, *args, **kwargs):
         form = CommentForm(request.POST)
         if form.is_valid():
@@ -100,24 +97,16 @@ class ShowPost(DetailView):
 
 @login_required
 @require_http_methods(["POST"])
-def add_comment(request, post_id):
+def add_comment(request, *args, **kwargs):
+
     form = CommentForm(request.POST)
-    post = get_object_or_404(Post, id=post_id)
+    post = get_object_or_404(Post, slug=kwargs.get("post_slug"))
 
     if form.is_valid():
         comment = Comment()
-        comment.path = []
-        comment.post_id = post
-        comment.author_id = auth.get_user(request)
-        comment.content = form.cleaned_data['comment_area']
-        comment.save()
-
-        try:
-            comment.path.extend(Comment.objects.get(id=form.cleaned_data['parent_comment']).path)
-            comment.path.append(comment.id)
-        except ObjectDoesNotExist:
-            comment.path.append(comment.id)
-
+        comment.post = post
+        comment.author = auth.get_user(request)
+        comment.content = form.cleaned_data['content']
         comment.save()
 
     return redirect(post.get_absolute_url())

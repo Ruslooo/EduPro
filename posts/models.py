@@ -1,10 +1,10 @@
-from django.db import models
+from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.utils.text import slugify
 from pytils.translit import translify
 
-from profiles.models import *
 from common.models import *
+from profiles.models import *
 
 
 class Post(models.Model):
@@ -27,6 +27,9 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_absolute_url(self):
+        return reverse("posts:post", kwargs={"post_slug": self.slug or self.title})
 
     class Meta:
         verbose_name = 'Пост'
