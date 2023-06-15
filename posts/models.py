@@ -1,5 +1,7 @@
 from django.db import models
+from django.utils.crypto import get_random_string
 from django.utils.text import slugify
+from pytils.translit import translify
 
 from profiles.models import *
 from common.models import *
@@ -9,8 +11,10 @@ class Post(models.Model):
     slug = models.SlugField(max_length=255, unique=True, db_index=True, verbose_name="URL")
     content = models.TextField(blank=True, verbose_name='Текст поста')
     photo = models.ImageField(upload_to="photos/%Y/%m/%d/", blank=True, verbose_name='Фото')
-    author = models.ForeignKey('profiles.Profile', on_delete=models.CASCADE, verbose_name='Автор')
-    department = models.ForeignKey('common.Department', on_delete=models.CASCADE, verbose_name='Кафедра')
+    author = models.ForeignKey('profiles.Profile', on_delete=models.SET_NULL, blank=True, null=True,
+                               verbose_name='Автор')
+    department = models.ForeignKey('common.Department', on_delete=models.SET_NULL, blank=True, null=True,
+                                   verbose_name='Кафедра')
     time_create = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
     time_update = models.DateTimeField(auto_now=True, verbose_name='Время изменения')
     is_published = models.BooleanField(default=True, verbose_name='Публикация')
@@ -24,19 +28,12 @@ class Post(models.Model):
         ordering = ['-time_create', 'title']
 
     def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.title)
+        slug = slugify(translify(self.title))
 
-        else:
-            old_instance = Post.objects.get(pk=self.pk)
-            if self.title != old_instance.title:
-                base_slug = slugify(self.title)
-                suffix = 1
-                while Post.objects.filter(slug=self.slug).exists():
-                    self.slug = f"{base_slug}-{suffix}"
-                    suffix += 1
+        if Post.objects.filter(slug__exact=slug).exists():
+            self.slug = slug + get_random_string(3)
 
-            return super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
 
 
