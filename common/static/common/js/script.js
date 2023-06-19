@@ -34,3 +34,5 @@ function show_comments_form(parent_comment_id)
     }
     $("#comment_form").insertAfter("#" + parent_comment_id);
 }
+
+

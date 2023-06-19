@@ -15,10 +15,11 @@ class RegisterUserForm(UserCreationForm):
 
     class Meta:
         model = Profile
-        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2', 'institute', 'department')
+        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2', 'institute', 'department',)
 
 
 
 class LoginUserForm(AuthenticationForm):
     username = forms.CharField(label='Логин', widget=forms.TextInput(attrs={'class': 'form-input'}))
     password = forms.CharField(label='Пароль', widget=forms.PasswordInput(attrs={'class': 'form-input'}))
+
