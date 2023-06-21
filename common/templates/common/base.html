@@ -43,11 +43,15 @@
                     <!-- Sidebar слева -->
                     <td valign="top" class="left-chapters">
                         <ul id="leftchapters">
-                            {% if cat_selected == 0 %}
-                                <li class="selected">Кафедры</li>
-                            {% else %}
+
+                                <li class="selected">Выбрать кафедру</li>
+                                <li class="selected">Выбрать институт</li>
+                                <li class="selected">Понравившиеся посты</li>
+                                <li class="selected">Мои подписки</li>
+                                <li class="selected">Подписчики</li>
+
 {#                                <li><a href="{% url 'posts:home' %}">Кафедры</a></li>#}
-                            {% endif %}
+
 
                             {% for c in cats %}
                                 {% if c.post__count > 0 %}
