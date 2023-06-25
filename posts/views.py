@@ -1,7 +1,7 @@
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import JsonResponse, Http404
+from django.http import JsonResponse, Http404, HttpResponseRedirect
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_http_methods
@@ -27,30 +27,70 @@ class PostHome(LoginRequiredMixin, ListView):
         context["posts"] = Post.objects.filter(is_published=True)
         context["title"] = 'Главная страница'
         context["menu"] = menu
+
+        # if self.request.user.is_authenticated:
+        #     likes_connected = get_object_or_404(Post, slug=self.kwargs['post_slug'])
+        #     liked = False
+        #     if likes_connected.likes.filter(id=self.request.user.id).exists():
+        #         liked = True
+        #     context['number_of_likes'] = likes_connected.number_of_likes()
+        #     context['post_is_liked'] = liked
+
         return context
 
     def handle_no_permission(self):
         return redirect('profiles:login')
 
-    @staticmethod
-    def leave_like(request, *args, **kwargs):
-        try:
-            instance = get_object_or_404(Post, slug=kwargs.get("post_slug"))
-            instance.likes_count += 1
-            instance.save()
-            return JsonResponse({"status": True, "message": "Вы поставили лайк"})
-        except Http404:
-            return JsonResponse({"status": False, "message": "Пост не был найден"})
+def like_post(request):
+    user = request.user
+    if request.method == 'POST':
+        post_id = request.POST.get('post_id')
+        post_obj = Post.objects.get(id=post_id)
 
-    @staticmethod
-    def leave_dislike(request, *args, **kwargs):
-        try:
-            instance = get_object_or_404(Post, slug=kwargs.get("post_slug"))
-            instance.dislikes_count += 1
-            instance.save()
-            return JsonResponse({"status": True, "message": "Вы поставили лайк"})
-        except Http404:
-            return JsonResponse({"status": False, "message": "Пост не был найден"})
+        if user in post_obj.likes.all():
+            post_obj.likes.remove(user)
+        else:
+            post_obj.likes.add(user)
+
+        like, created = Like.objects.get_or_create(user=user, post_id=post_id)
+
+        if not created:
+            if like.value == 'Like':
+                like.value = 'Unlike'
+            else:
+                like.value = 'Like'
+
+        like.save()
+    return redirect('common:home')
+
+# def postLike(request, post_slug):
+#     post = get_object_or_404(Post, slug=request.POST.get('post_slug'))
+#
+#     if post.likes.filter(id=request.user.id).exists():
+#         post.likes.remove(request.user)
+#     else:
+#         post.likes.add(request.user)
+#     return HttpResponseRedirect(reverse('posts:post', args=[post.slug]))
+
+    # @staticmethod
+    # def leave_like(request, *args, **kwargs):
+    #     try:
+    #         instance = get_object_or_404(Post, slug=kwargs.get("post_slug"))
+    #         instance.likes_count += 1
+    #         instance.save()
+    #         return JsonResponse({"status": True, "message": "Вы поставили лайк"})
+    #     except Http404:
+    #         return JsonResponse({"status": False, "message": "Пост не был найден"})
+    #
+    # @staticmethod
+    # def leave_dislike(request, *args, **kwargs):
+    #     try:
+    #         instance = get_object_or_404(Post, slug=kwargs.get("post_slug"))
+    #         instance.dislikes_count += 1
+    #         instance.save()
+    #         return JsonResponse({"status": True, "message": "Вы поставили лайк"})
+    #     except Http404:
+    #         return JsonResponse({"status": False, "message": "Пост не был найден"})
 
 class AddPage(LoginRequiredMixin, CreateView):
     form_class = AddPostForm
@@ -91,6 +131,9 @@ class ShowPost(DetailView):
             'comments': comments,
             'post_comments_count': post_comments_count,
         })
+
+
+
         return context
 
 @login_required

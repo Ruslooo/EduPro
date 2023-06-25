@@ -35,4 +35,26 @@ function show_comments_form(parent_comment_id)
     $("#comment_form").insertAfter("#" + parent_comment_id);
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    const likeButton = document.querySelector('.like-button');
+    const likeCount = document.querySelector('.like-count');
 
+    // Получение сохраненного количества лайков из localStorage
+    const savedCount = localStorage.getItem('likeCount');
+
+    // Если сохраненное значение существует, устанавливаем его в likeCount
+    if (savedCount) {
+        likeCount.textContent = savedCount;
+    }
+
+    likeButton.addEventListener('click', () => {
+        const currentCount = parseInt(likeCount.textContent, 10);
+        likeCount.textContent = currentCount + 1;
+
+        // Обновление отображаемого количества лайков
+        likeCount.textContent = newCount;
+
+        // Сохранение нового значения в localStorage
+        localStorage.setItem('likeCount', newCount);
+    });
+});

@@ -16,7 +16,7 @@
         {% for post in posts %}
             <li>
                 <div class="article-panel">
-                    {% if post.author %}<p class="first">Автор: {{post.author}} </p> {% endif %}
+                    {% if post.author %}<p class="first">Автор: {{post.author}} &nbsp; </p> {% endif %}
                     {% if post.department %}<p class="first">Кафедра: {{post.department}}</p> {% endif %}
                     <p class="last">Дата: {{ post.time_update|date:"d-m-Y H:i:s" }}</p>
                 </div>
@@ -35,18 +35,23 @@
                 </div>
                 <div class="link-read-post"
                      style="display:flex; flex-flow: row nowrap; justify-content: flex-end; gap: 10px">
-<!--                    <div class="likes">{{ post.likes_count }} лайков</div>-->
-<!--                    <div class="dislikes">{{ post.dislikes_count }} дизлайков</div>-->
-<!--                    <button type="button" class="leave-thumb js-trigger-thumbs"-->
-<!--                            data-url="{% url 'posts:leave_like' post.slug ">-->
-<!--                        {#                        {% include "posts/includes/thumbs_up.html" %}#}-->
-<!--                        Лайк-->
-<!--                    </button>-->
-<!--                    <button type="button" class="leave-thumb js-trigger-thumbs"-->
-<!--                            data-url="{% url 'posts:leave_dislike' post.slug ">-->
-<!--                        Дизлайк-->
-<!--                        {#                        {% include "posts/includes/thumbs_down.html" %}#}-->
-<!--                    </button>-->
+
+
+                {% if user.is_authenticated %}
+                    <form action="{% url 'posts:blogpost_like' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="post_id" value="{{post.id}}">
+                        {% if user not in post.likes.all %}
+                            <button type="submit"  class="btn btn-info">&#10084</button>
+                        {% else %}
+                            <button type="submit" class="btn btn-info">&#9829</button>
+                        {% endif %}
+                    </form>
+                    <strong>{{ post.likes.all.count }} лайков</strong>
+                    {% else %}
+                    <a class="btn btn-outline-info" href="{% url 'profiles:login' %}?next={{request.path}}">Войдите, что бы поставить лайк!</a><br>
+                    {% endif %}
+
                     <div><a href="{{ post.get_absolute_url }}">Читать пост</a></div>
                 </div>
             </li>

@@ -22,11 +22,17 @@ class Post(models.Model):
     time_update = models.DateTimeField(auto_now=True, verbose_name='Время изменения')
     is_published = models.BooleanField(default=True, verbose_name='Публикация')
 
+    likes = models.ManyToManyField('profiles.Profile', related_name='blogpost_like')
+
     visible_to = models.CharField(max_length=20, choices=VISIBLE_TO_CHOICES, default='all',
                                   verbose_name='Видимость поста')
 
     def __str__(self):
         return self.title
+
+    @property
+    def number_of_likes(self):
+        return self.likes.all().count()
 
     def get_absolute_url(self):
         return reverse("posts:post", kwargs={"post_slug": self.slug or self.title})
@@ -45,3 +51,17 @@ class Post(models.Model):
             self.slug = slug
 
         super().save(*args, **kwargs)
+
+
+LIKE_CHOICES = (
+    ('Like', 'Like'),
+    ('Unlike', 'Unlike'),
+)
+
+class Like(models.Model):
+    user = models.ForeignKey('profiles.Profile', on_delete=models.CASCADE)
+    post = models.ForeignKey('Post', on_delete=models.CASCADE)
+    value = models.CharField(choices=LIKE_CHOICES, default='Like', max_length=10)
+
+    def __str__(self):
+        return str(self.post)

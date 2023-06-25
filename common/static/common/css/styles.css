@@ -559,3 +559,22 @@ ul.lang-list li a:hover {
 /*    transition: background-color 0.2s ease-in-out;*/
 /*    background-color: #d3d3d3;*/
 /*}*/
+
+
+.like-container {
+  display: flex;
+  align-items: center;
+}
+
+.like-button {
+    font-size: 24px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+    margin-right: 8px;
+}
+
+.like-count {
+  font-size: 18px;
+}
